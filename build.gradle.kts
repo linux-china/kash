@@ -1,4 +1,3 @@
-
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
 val kashVersion = File("src/main/resources/version.txt").readText().trim()
@@ -12,7 +11,7 @@ allprojects {
 }
 
 buildscript {
-    val kotlinVer by extra { "1.3.41" }
+    val kotlinVer by extra { "1.3.60" }
 
     repositories {
         jcenter()
@@ -22,7 +21,7 @@ buildscript {
 
     dependencies {
         classpath(kotlin("gradle-plugin", kotlinVer))
-        classpath("com.github.jengelman.gradle.plugins:shadow:4.0.4")
+        classpath("com.github.jengelman.gradle.plugins:shadow:5.2.0")
     }
 }
 
@@ -43,14 +42,15 @@ plugins {
     "maven-publish"
     application
     idea
-    id("org.jetbrains.kotlin.jvm") version "1.3.40-eap-105"
-    id("com.github.johnrengelman.shadow") version "4.0.2"
+    id("org.jetbrains.kotlin.jvm") version "1.3.60"
+    id("com.github.johnrengelman.shadow") version "5.2.0"
     id("ca.coglinc.javacc") version "2.4.0"
     id("com.github.breadmoirai.github-release") version "2.2.9"
     id("com.jfrog.bintray") version "1.8.3" // Don't use 1.8.4, crash when publishing
+    id("com.github.ben-manes.versions") version "0.27.0"
 }
 
-val kotlinVer by extra { "1.3.41" }
+val kotlinVer by extra { "1.3.60" }
 
 sourceSets {
     main {
@@ -59,26 +59,32 @@ sourceSets {
 }
 
 dependencies {
-    listOf("org.jline:jline:3.11.0",
-            "org.fusesource:fuse-project:7.2.0.redhat-060",
-            "org.slf4j:slf4j-api:1.8.0-beta4",
-            "ch.qos.logback:logback-classic:1.3.0-alpha4",
-            "com.google.inject:guice:4.2.2",
-            "me.sargunvohra.lib:CakeParse:1.0.7",
-            "com.beust:jcommander:1.72",
-            "org.apache.ivy:ivy:2.4.0")
+    listOf(
+        "org.jline:jline:3.13.1",
+        "org.fusesource:fuse-project:7.2.0.redhat-060",
+        "org.slf4j:slf4j-api:2.0.0-alpha1",
+        "ch.qos.logback:logback-classic:1.3.0-alpha5",
+        "com.google.inject:guice:4.2.2",
+        "me.sargunvohra.lib:CakeParse:1.0.7",
+        "com.beust:jcommander:1.72",
+        "org.apache.ivy:ivy:2.5.0"
+    )
         .forEach { compile(it) }
 
-    compile("com.beust:klaxon:5.0.5") {
+    compile("com.beust:klaxon:5.2") {
         exclude("org.jetbrains.kotlin")
     }
 
-    listOf("compiler-embeddable", "scripting-compiler-embeddable", "scripting-common", "scripting-jvm",
-                "scripting-jvm-host-embeddable", "main-kts")
+    listOf(
+        "compiler-embeddable", "scripting-compiler-embeddable", "scripting-common", "scripting-jvm",
+        "scripting-jvm-host-embeddable", "main-kts"
+    )
         .forEach { compile(kotlin(it, kotlinVer)) }
 
-    listOf("org.testng:testng:6.13.1",
-            "org.assertj:assertj-core:3.5.2")
+    listOf(
+        "org.testng:testng:7.0.0",
+        "org.assertj:assertj-core:3.14.0"
+    )
         .forEach { testCompile(it) }
 }
 
@@ -101,9 +107,11 @@ val jar by tasks.getting {
 // Update the scripts "run" and "kash" to use the correct jar file (which changes depending on the version number)
 // This should only be run when the version number changes.
 tasks.register("updateScripts") {
-    listOf("run" to "./gradlew shadowJar && java",
-            "kash" to "java -Dorg.slf4j.simpleLogger.defaultLogLevel=info",
-            "kash-debug" to "java -Droot-level=DEBUG")
+    listOf(
+        "run" to "./gradlew shadowJar && java",
+        "kash" to "java -Dorg.slf4j.simpleLogger.defaultLogLevel=info",
+        "kash-debug" to "java -Droot-level=DEBUG"
+    )
         .forEach { pair ->
             File(pair.first).apply {
                 writeText(pair.second + " -jar build/libs/$kashShellJar\n")
@@ -173,7 +181,7 @@ tasks["assemble"].finalizedBy("apiJar", "apiSrcJar")
 tasks["smallDistZip"].dependsOn("createScript")
 
 tasks.register("createScript") {
-    doLast{
+    doLast {
         File("$buildDir/kashScripts").apply {
             mkdirs()
             File(absolutePath, "kash").apply {
@@ -191,7 +199,7 @@ tasks.register("all") {
     doLast {
         val file = "$buildDir/distributions/kash-$kashVersion.zip"
         File("$buildDir/distributions/kash-small-$kashVersion.zip")
-                .renameTo(File(file))
+            .renameTo(File(file))
         println("Created $file")
     }
 }
@@ -217,7 +225,7 @@ bintray {
         repo = "maven"
         name = "kash"
         with(version) {
-//            name = "1.14"
+            //            name = "1.14"
             desc = "Description of Kash"
             with(gpg) {
                 sign = true
