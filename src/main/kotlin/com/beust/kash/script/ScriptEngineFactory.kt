@@ -7,7 +7,10 @@ package com.beust.kash.script
 
 import com.beust.kash.DotKashJsonReader
 import org.jetbrains.kotlin.cli.common.repl.KotlinJsr223JvmScriptEngineFactoryBase
+import org.jetbrains.kotlin.cli.common.repl.ScriptArgsWithTypes
 import java.io.File
+import javax.script.Bindings
+import javax.script.ScriptContext
 import javax.script.ScriptEngine
 import kotlin.script.experimental.api.ScriptCompilationConfiguration
 import kotlin.script.experimental.jvm.JvmScriptCompilationConfigurationBuilder
@@ -50,7 +53,13 @@ class ScriptEngineFactory : KotlinJsr223JvmScriptEngineFactoryBase() {
                     calculateClasspath()
                 }
             },
-            evaluationConfiguration
+            evaluationConfiguration,
+            getScriptArgs = { context: ScriptContext ->
+                ScriptArgsWithTypes(
+                    arrayOf(context.getBindings(ScriptContext.ENGINE_SCOPE).orEmpty()),
+                    arrayOf(Bindings::class)
+                )
+            }
         )
 }
 
